@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="font-size: 24px; font-weight: 600;">{{ project.name }}</h2>
+        <a href="{{ url_for('projects.dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+    
+    <!-- Project Info -->
+    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <p style="color: #6b7280; margin-bottom: 16px;">{{ project.description or 'No description' }}</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <div>
+                <div style="font-size: 12px; color: #9ca3af;">Deadline</div>
+                <div style="font-weight: 500;">{{ project.deadline.strftime('%B %d, %Y') }}</div>
+            </div>
+            <div>
+                <div style="font-size: 12px; color: #9ca3af;">Owner</div>
+                <div style="font-weight: 500;">{{ project.owner.name }}</div>
+            </div>
+            <div>
+                <div style="font-size: 12px; color: #9ca3af;">Created</div>
+                <div style="font-weight: 500;">{{ project.created_at.strftime('%B %d, %Y') }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lazy Members Alert -->
+    {% if lazy_members %}
+        <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+            <strong style="color: #92400e;">⚠️ Inactive Members Alert</strong>
+            {% for member in lazy_members %}
+                <div style="margin-top: 8px; font-size: 13px; color: #92400e;">
+                    {{ member.user.name }} - Last active: {{ member.last_active.strftime('%b %d, %Y') if member.last_active != 'Never' else 'Never' }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- Tasks Section -->
+    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 18px; font-weight: 600;">Tasks</h3>
+            <a href="{{ url_for('tasks.create_task', project_id=project.id) }}" class="btn btn-primary btn-sm">+ Add Task</a>
+        </div>
+        
+        {% if tasks %}
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                {% for task in tasks %}
+                    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                            <div>
+                                <strong>{{ task.title }}</strong>
+                                <span style="font-size: 12px; color: #6b7280; margin-left: 8px;">({{ task.assignee.name }})</span>
+                            </div>
+                            <span style="padding: 2px 8px; border-radius: 9999px; font-size: 11px; 
+                                {% if task.priority == 'high' %}background: #fee2e2; color: #991b1b;
+                                {% elif task.priority == 'medium' %}background: #fed7aa; color: #9a3412;
+                                {% else %}background: #d1fae5; color: #065f46;{% endif %}">
+                                {{ task.priority|upper }}
+                            </span>
+                        </div>
+                        
+                        <div style="margin: 8px 0;">
+                            <div style="width: 100%; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden;">
+                                <div style="width: {{ task.progress }}%; height: 100%; background: #3b82f6;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; color: #6b7280;">
+                                <span>Progress: {{ task.progress }}%</span>
+                                <span>Due: {{ task.deadline.strftime('%b %d') }}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="padding: 2px 8px; border-radius: 9999px; font-size: 11px; 
+                                {% if task.status == 'completed' %}background: #d1fae5; color: #065f46;
+                                {% elif task.status == 'in_progress' %}background: #dbeafe; color: #1e40af;
+                                {% else %}background: #e5e7eb; color: #4b5563;{% endif %}">
+                                {{ task.status.replace('_', ' ').title() }}
+                            </span>
+                            <a href="{{ url_for('tasks.view_task', task_id=task.id) }}" style="color: #3b82f6; text-decoration: none; font-size: 12px;">View Details →</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                <p>No tasks yet</p>
+                <a href="{{ url_for('tasks.create_task', project_id=project.id) }}" class="btn btn-primary btn-sm" style="margin-top: 8px;">Create your first task</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Team Members Section -->
+    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 18px; font-weight: 600;">Team Members</h3>
+            {% if project.owner_id == current_user.id %}
+                <button onclick="toggleAddMember()" class="btn btn-secondary btn-sm">+ Add Member</button>
+            {% endif %}
+        </div>
+        
+        <!-- Add Member Form -->
+        {% if project.owner_id == current_user.id %}
+            <div id="addMemberForm" style="display: none; margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px;">
+                <form action="{{ url_for('projects.add_member', project_id=project.id) }}" method="POST">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="email" name="email" placeholder="Enter member's email" required style="flex: 1; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                        <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                        <button type="button" onclick="toggleAddMember()" class="btn btn-secondary btn-sm">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        {% endif %}
+        
+        {% if members %}
+            <div style="display: grid; gap: 16px;">
+                {% for member in members %}
+                    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                            <div>
+                                <strong style="font-size: 16px;">{{ member.user.name }}</strong>
+                                <div style="font-size: 12px; color: #6b7280;">{{ member.user.email }}</div>
+                            </div>
+                            <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; 
+                                {% if member.score >= 80 %}background: #d1fae5; color: #065f46;
+                                {% elif member.score >= 50 %}background: #fed7aa; color: #9a3412;
+                                {% else %}background: #fee2e2; color: #991b1b;{% endif %}">
+                                {{ member.tag }}
+                            </span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
+                            <div style="font-size: 28px; font-weight: 600; color: #3b82f6;">{{ member.score }}%</div>
+                            <div style="font-size: 12px; color: #6b7280;">Fairness Score</div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 11px; color: #9ca3af;">Tasks</div>
+                                <div style="font-size: 14px; font-weight: 500;">{{ member.metrics.tasks_completed }}</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 11px; color: #9ca3af;">On-time</div>
+                                <div style="font-size: 14px; font-weight: 500;">{{ member.metrics.on_time_rate }}</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 11px; color: #9ca3af;">Activity</div>
+                                <div style="font-size: 14px; font-weight: 500;">{{ member.metrics.activity_count }}</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 11px; color: #9ca3af;">Peer Rating</div>
+                                <div style="font-size: 14px; font-weight: 500;">{{ member.metrics.peer_rating }}</div>
+                            </div>
+                        </div>
+                        
+                        {% if project.owner_id == current_user.id and member.user.id != current_user.id %}
+                            <form action="{{ url_for('projects.remove_member', project_id=project.id, user_id=member.user.id) }}" method="POST" style="margin-top: 12px;">
+                                <button type="submit" onclick="return confirm('Remove {{ member.user.name }} from project?')" style="background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer;">Remove from project</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                <p>No members in this project</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Peer Review Link -->
+    <div style="text-align: center;">
+        <a href="{{ url_for('peer_reviews.project_reviews', project_id=project.id) }}" class="btn btn-primary">Rate Team Members</a>
+    </div>
+    <!-- Recent Activity Feed -->
+<div class="section" style="margin-top: 24px;">
+    <div class="section-header">
+        <h3>📢 Recent Activity</h3>
+    </div>
+    
+    <div style="max-height: 300px; overflow-y: auto;">
+        {% if project.activity_logs %}
+            {% for activity in project.activity_logs|sort(attribute='timestamp', reverse=True)|slice(10) %}
+                <div style="padding: 12px; border-bottom: 1px solid #e5e7eb; display: flex; gap: 12px;">
+                    <div style="width: 32px; height: 32px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        {% if 'completed' in activity.action %}
+                            ✅
+                        {% elif 'updated' in activity.action %}
+                            📝
+                        {% else %}
+                            👤
+                        {% endif %}
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 14px;">
+                            <strong>{{ activity.user.name }}</strong>
+                            <span style="color: #6b7280;">{{ activity.action }}</span>
+                        </div>
+                        <div style="font-size: 12px; color: #9ca3af;">
+                            {{ activity.timestamp.strftime('%b %d, %Y at %I:%M %p') }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state" style="padding: 40px;">
+                <p>No activity yet</p>
+                <p style="font-size: 13px;">Activity will appear here when tasks are updated</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+
+<script>
+function toggleAddMember() {
+    var form = document.getElementById('addMemberForm');
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+    } else {
+        form.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

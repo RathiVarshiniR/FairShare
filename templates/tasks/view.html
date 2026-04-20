@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FairShare - Task Details</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            padding: 2rem 1.5rem;
+        }
+        
+        .sidebar h1 {
+            font-size: 1.5rem;
+            color: #333;
+        }
+        
+        .sidebar .user-info {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 1rem 0 2rem 0;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .nav-links {
+            list-style: none;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #666;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: #f5f5f5;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            max-width: 900px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h2 {
+            color: #333;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+        
+        .task-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            padding: 2rem;
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .task-title {
+            font-size: 1.5rem;
+            color: #333;
+        }
+        
+        .priority-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .priority-high {
+            background: #fee;
+            color: #c33;
+        }
+        
+        .priority-medium {
+            background: #feebc8;
+            color: #dd6b20;
+        }
+        
+        .priority-low {
+            background: #e6fffa;
+            color: #38a169;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-not_started {
+            background: #e0e0e0;
+            color: #666;
+        }
+        
+        .status-in_progress {
+            background: #bee3f8;
+            color: #2b6cb0;
+        }
+        
+        .status-completed {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+        
+        .info-label {
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .description {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            line-height: 1.6;
+        }
+        
+        .progress-section {
+            margin: 1.5rem 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s;
+        }
+        
+        .progress-input {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        
+        .progress-input input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        
+        .status-select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>FairShare</h1>
+            <div class="user-info">
+                Welcome, {{ current_user.name }}
+            </div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('projects.dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('projects.create_project') }}" class="nav-link">New Project</a></li>
+                <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="header">
+                <h2>Task Details</h2>
+                <a href="{{ url_for('projects.view_project', project_id=task.project_id) }}" class="btn btn-secondary">Back to Project</a>
+            </div>
+            
+            <div class="task-card">
+                <div class="task-header">
+                    <h3 class="task-title">{{ task.title }}</h3>
+                    <div>
+                        <span class="priority-badge priority-{{ task.priority }}">{{ task.priority|upper }}</span>
+                    </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Assigned To</div>
+                        <div class="info-value">{{ task.assignee.name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Deadline</div>
+                        <div class="info-value">{{ task.deadline.strftime('%B %d, %Y') }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value">
+                            <span class="status-badge status-{{ task.status }}">{{ task.status.replace('_', ' ').title() }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Created</div>
+                        <div class="info-value">{{ task.created_at.strftime('%B %d, %Y') }}</div>
+                    </div>
+                </div>
+                
+                {% if task.description %}
+                    <div class="description">
+                        <strong>Description:</strong><br>
+                        {{ task.description }}
+                    </div>
+                {% endif %}
+                
+                {% if task.assigned_to == current_user.id %}
+                    <div class="progress-section">
+                        <strong>Progress: {{ task.progress }}%</strong>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ task.progress }}%"></div>
+                        </div>
+                        
+                        <div class="progress-input">
+                            <input type="number" id="progress" min="0" max="100" value="{{ task.progress }}" placeholder="Progress %">
+                            <button class="btn btn-primary" onclick="updateProgress()">Update Progress</button>
+                        </div>
+                        
+                        <select class="status-select" id="status" onchange="updateStatus()">
+                            <option value="not_started" {% if task.status == 'not_started' %}selected{% endif %}>Not Started</option>
+                            <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+                {% endif %}
+                
+                <div class="action-buttons">
+                    <a href="{{ url_for('projects.view_project', project_id=task.project_id) }}" class="btn btn-secondary">Back to Project</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function updateProgress() {
+            const progress = document.getElementById('progress').value;
+            fetch(`/tasks/{{ task.id }}/update-progress`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ progress: parseInt(progress) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+        
+        function updateStatus() {
+            const status = document.getElementById('status').value;
+            fetch(`/tasks/{{ task.id }}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: status })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

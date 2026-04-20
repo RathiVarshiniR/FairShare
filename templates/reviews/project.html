@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Peer Reviews - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="page-header">
+        <h2>Peer Reviews</h2>
+        <a href="{{ url_for('projects.view_project', project_id=project.id) }}" class="btn btn-secondary">← Back to Project</a>
+    </div>
+    
+    <div class="card">
+        <div style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 8px;">Rate Your Teammates</h3>
+            <p style="color: #6b7280; font-size: 14px;">Rate each team member from 1 to 5 stars. Your ratings help calculate fairness scores.</p>
+        </div>
+        
+        <div class="members-grid" style="grid-template-columns: 1fr;">
+            {% for member in members %}
+                {% if member.id != current_user.id %}
+                    <div class="member-card" style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <div>
+                                <h3 style="font-size: 16px; font-weight: 600;">{{ member.name }}</h3>
+                                <p style="font-size: 12px; color: #6b7280;">{{ member.email }}</p>
+                            </div>
+                            {% if member_ratings[member.id] %}
+                                <div style="text-align: right;">
+                                    <div style="font-size: 20px; font-weight: 600; color: #3b82f6;">{{ member_ratings[member.id].average }}</div>
+                                    <div style="font-size: 11px; color: #9ca3af;">{{ member_ratings[member.id].count }} reviews</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div id="rating-{{ member.id }}">
+                            <div style="margin-bottom: 12px;">
+                                <label style="font-size: 13px; font-weight: 500; margin-bottom: 8px; display: block;">Your Rating</label>
+                                <div style="display: flex; gap: 8px;">
+                                    {% for star in range(1, 6) %}
+                                        <button onclick="setRating({{ member.id }}, {{ star }})" 
+                                                id="star-{{ member.id }}-{{ star }}"
+                                                style="background: none; border: none; font-size: 28px; cursor: pointer; 
+                                                       {% if existing_ratings[member.id] and existing_ratings[member.id].rating >= star %}color: #fbbf24;
+                                                       {% else %}color: #e5e7eb;{% endif %}">
+                                            ★
+                                        </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label style="font-size: 13px; font-weight: 500; margin-bottom: 8px; display: block;">Comment (optional)</label>
+                                <textarea id="comment-{{ member.id }}" 
+                                          style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; resize: vertical;"
+                                          rows="2"
+                                          placeholder="Share your feedback...">{{ existing_ratings[member.id].comment if existing_ratings[member.id] else '' }}</textarea>
+                            </div>
+                            
+                            <button onclick="submitRating({{ member.id }})" 
+                                    style="background: #3b82f6; color: white; padding: 6px 16px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer;">
+                                {% if existing_ratings[member.id] %}Update Rating{% else %}Submit Rating{% endif %}
+                            </button>
+                            
+                            <div id="message-{{ member.id }}" style="margin-top: 8px; font-size: 12px;"></div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No other team members to review</p>
+                    <p style="font-size: 13px; margin-top: 8px;">You're the only member in this project</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div style="margin-top: 24px; padding: 16px; background: #f9fafb; border-radius: 8px;">
+            <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">About Peer Reviews</h4>
+            <ul style="font-size: 13px; color: #6b7280; line-height: 1.6; margin-left: 20px;">
+                <li>Ratings are anonymous - team members won't see who rated them</li>
+                <li>You can update your rating at any time</li>
+                <li>Ratings contribute 10% to the fairness score</li>
+                <li>Be honest and constructive in your feedback</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedRatings = {};
+
+{% for member in members %}
+    {% if member.id != current_user.id and existing_ratings[member.id] %}
+        selectedRatings[{{ member.id }}] = {{ existing_ratings[member.id].rating }};
+    {% endif %}
+{% endfor %}
+
+function setRating(userId, rating) {
+    selectedRatings[userId] = rating;
+    
+    // Update star colors
+    for (let i = 1; i <= 5; i++) {
+        const star = document.getElementById(`star-${userId}-${i}`);
+        if (star) {
+            star.style.color = i <= rating ? '#fbbf24' : '#e5e7eb';
+        }
+    }
+}
+
+function submitRating(userId) {
+    const rating = selectedRatings[userId];
+    const comment = document.getElementById(`comment-${userId}`).value;
+    const messageDiv = document.getElementById(`message-${userId}`);
+    
+    if (!rating) {
+        messageDiv.innerHTML = '<span style="color: #ef4444;">Please select a rating (1-5 stars)</span>';
+        return;
+    }
+    
+    messageDiv.innerHTML = '<span style="color: #6b7280;">Submitting...</span>';
+    
+    fetch('{{ url_for("peer_reviews.rate_member") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            project_id: {{ project.id }},
+            rated_user_id: userId,
+            rating: rating,
+            comment: comment
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            messageDiv.innerHTML = '<span style="color: #10b981;">✓ Rating submitted successfully!</span>';
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 3000);
+        } else {
+            messageDiv.innerHTML = '<span style="color: #ef4444;">Error: ' + (data.error || 'Something went wrong') + '</span>';
+        }
+    })
+    .catch(error => {
+        messageDiv.innerHTML = '<span style="color: #ef4444;">Error submitting rating</span>';
+    });
+}
+</script>
+
+<style>
+.member-card {
+    transition: all 0.2s;
+}
+.member-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+</style>
+{% endblock %}

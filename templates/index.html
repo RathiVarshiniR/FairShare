@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FairShare - Group Project Accountability</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+            line-height: 1.5;
+        }
+        
+        .container {
+            min-height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+        
+        .header p {
+            font-size: 18px;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+        
+        .feature-item {
+            text-align: center;
+        }
+        
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 16px;
+        }
+        
+        .feature-item h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        
+        .feature-item p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+            max-width: 250px;
+            margin: 0 auto;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 60px;
+        }
+        
+        .btn {
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #374151;
+            border-color: #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 14px;
+            padding-top: 40px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+            
+            .header h1 {
+                font-size: 36px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            
+            .btn {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FairShare</h1>
+            <p>Keep your team accountable with fairness scores and contribution tracking</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon"></div>
+                <h3>Fairness Scores</h3>
+                <p>Algorithm calculates contributions based on tasks, activity, and peer reviews</p>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"></div>
+                <h3>Task Management</h3>
+                <p>Create, assign, and track tasks with priority levels and deadlines</p>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"></div>
+                <h3>Peer Reviews</h3>
+                <p>Rate teammates and provide feedback to improve collaboration</p>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"></div>
+                <h3>Activity Tracking</h3>
+                <p>Monitor progress and get alerts for inactive team members</p>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"></div>
+                <h3>On-time Submissions</h3>
+                <p>Track deadline adherence and completion rates</p>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"></div>
+                <h3>Performance Tags</h3>
+                <p>Automatic categorization: Top Contributor, Average, Needs Improvement</p>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a href="/auth/login" class="btn btn-primary">Sign in</a>
+            <a href="/auth/register" class="btn btn-secondary">Create account</a>
+        </div>
+        
+        <div class="footer">
+            © 2026 FairShare · Keep your team accountable
+        </div>
+    </div>
+</body>
+</html>
