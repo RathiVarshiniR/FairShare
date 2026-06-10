@@ -1,10 +1,6 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask import Flask, render_template
+from extensions import db, login_manager
 import os
-
-db = SQLAlchemy()
-login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
@@ -18,17 +14,21 @@ def create_app():
     login_manager.login_view = 'auth.login'
 
     # Register blueprints
-    from routes.auth import auth
-    from routes.projects import projects
-    from routes.tasks import tasks
-    from routes.analytics import analytics
-    from routes.peer_reviews import peer_reviews
+    from routes.auth import bp as auth
+    from routes.projects import bp as projects
+    from routes.tasks import bp as tasks
+    from routes.analytics import bp as analytics
+    from routes.peer_reviews import bp as peer_reviews
 
     app.register_blueprint(auth)
     app.register_blueprint(projects)
     app.register_blueprint(tasks)
     app.register_blueprint(analytics)
     app.register_blueprint(peer_reviews)
+
+    @app.route('/')
+    def index():
+        return render_template('index.html')
 
     with app.app_context():
         db.create_all()
